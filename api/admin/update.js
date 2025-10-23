@@ -1,0 +1,101 @@
+/**
+ * Admin endpoint: hide/unhide quotes.
+ */
+
+const { sql } = require('@vercel/postgres');
+const { ensureQuotesTable } = require('../../lib/ensureTable');
+
+const ADMIN_PASSWORD = 'lcy';
+
+async function parseJsonBody(req) {
+  if (req.body && typeof req.body === 'object') {
+    return req.body;
+  }
+
+  let raw = '';
+  for await (const chunk of req) {
+    raw += chunk;
+  }
+
+  if (!raw) return {};
+
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    throw new Error('请求体不是有效的JSON');
+  }
+}
+
+function normalizeIds(ids) {
+  if (!Array.isArray(ids)) {
+    return [];
+  }
+
+  const unique = new Set();
+  ids.forEach((value) => {
+    const num = Number(value);
+    if (Number.isInteger(num) && num > 0) {
+      unique.add(num);
+    }
+  });
+  return Array.from(unique);
+}
+
+module.exports = async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  if (!process.env.POSTGRES_URL) {
+    return res.status(503).json({
+      error: '数据库连接未配置',
+      hint: '请先在Vercel项目中配置 Postgres 连接信息',
+    });
+  }
+
+  try {
+    const body = await parseJsonBody(req);
+    if (body.password !== ADMIN_PASSWORD) {
+      return res.status(401).json({ error: '管理员密码错误' });
+    }
+
+    const action = body.action;
+    const ids = normalizeIds(body.ids);
+
+    if (!action || !['hide', 'unhide'].includes(action)) {
+      return res.status(400).json({ error: '未知操作类型' });
+    }
+
+    if (ids.length === 0) {
+      return res.status(400).json({ error: '缺少有效的ID列表' });
+    }
+
+    const hiddenValue = action === 'hide';
+
+    await ensureQuotesTable();
+
+    const result = await sql`
+      UPDATE quotes
+      SET hidden = ${hiddenValue}
+      WHERE id = ANY(${sql.array(ids, 'int8')})
+      RETURNING id, hidden
+    `;
+
+    return res.status(200).json({
+      success: true,
+      updated: result.rows.map((row) => ({ id: Number(row.id), hidden: row.hidden })),
+    });
+  } catch (error) {
+    console.error('Admin update error:', error);
+    const message = error.message || '未知错误';
+    return res.status(500).json({ error: '更新失败', details: message });
+  }
+};

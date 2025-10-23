@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>金句墙后台管理</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --panel: rgba(15, 23, 42, 0.92);
+            --accent: #38bdf8;
+            --accent-soft: rgba(56, 189, 248, 0.15);
+            --danger: #f87171;
+            --danger-soft: rgba(248, 113, 113, 0.15);
+            --success: #34d399;
+            --text: #e2e8f0;
+            --muted: rgba(226, 232, 240, 0.65);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+        }
+
+        body {
+            background: radial-gradient(circle at top, rgba(56, 189, 248, 0.2), transparent 40%),
+                        radial-gradient(circle at bottom, rgba(34, 197, 94, 0.18), transparent 45%),
+                        #020617;
+            min-height: 100vh;
+            color: var(--text);
+            padding: 40px 20px 80px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.4rem;
+            margin-bottom: 25px;
+            letter-spacing: 0.08em;
+        }
+
+        .panel {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: var(--panel);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.45);
+        }
+
+        .login-area {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+
+        .login-area input {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            border-radius: 10px;
+            padding: 12px 18px;
+            color: var(--text);
+            width: 220px;
+            font-size: 1rem;
+        }
+
+        .login-area button {
+            background: var(--accent);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 24px;
+            color: #020617;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: 0.08em;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .login-area button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(56, 189, 248, 0.35);
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+
+        .toolbar button {
+            padding: 10px 18px;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            background: rgba(56, 189, 248, 0.12);
+            color: var(--accent);
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .toolbar button:hover {
+            background: rgba(56, 189, 248, 0.25);
+        }
+
+        .toolbar button.delete {
+            background: var(--danger-soft);
+            color: var(--danger);
+        }
+
+        .toolbar button.delete:hover {
+            background: rgba(248, 113, 113, 0.25);
+        }
+
+        .toolbar button.success {
+            background: rgba(52, 211, 153, 0.18);
+            color: var(--success);
+        }
+
+        .status-bar {
+            margin-bottom: 16px;
+            font-size: 0.95rem;
+            color: var(--muted);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(15, 23, 42, 0.65);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        thead {
+            background: rgba(148, 163, 184, 0.12);
+        }
+
+        th, td {
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+            text-align: left;
+            vertical-align: middle;
+            font-size: 0.92rem;
+        }
+
+        tbody tr:hover {
+            background: rgba(30, 41, 59, 0.6);
+        }
+
+        tbody tr.hidden {
+            background: rgba(148, 163, 184, 0.07);
+        }
+
+        .preview-img {
+            width: 120px;
+            border-radius: 10px;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.4);
+        }
+
+        .actions-cell {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .tag.hidden {
+            background: rgba(148, 163, 184, 0.12);
+            color: rgba(148, 163, 184, 0.8);
+        }
+
+        .tag.reports {
+            background: rgba(248, 113, 113, 0.15);
+            color: rgba(248, 113, 113, 0.85);
+        }
+
+        .toast {
+            position: fixed;
+            top: 18px;
+            right: 18px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(56, 189, 248, 0.18);
+            padding: 14px 18px;
+            border-radius: 12px;
+            color: var(--text);
+            box-shadow: 0 15px 35px rgba(15, 23, 42, 0.45);
+            z-index: 1000;
+            min-width: 220px;
+            animation: slideIn 0.2s ease-out;
+        }
+
+        .toast.error {
+            border-color: rgba(248, 113, 113, 0.35);
+            color: #fecaca;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 0;
+            color: var(--muted);
+        }
+
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            color: rgba(148, 163, 184, 0.65);
+            font-size: 0.85rem;
+            letter-spacing: 0.08em;
+        }
+
+        @media (max-width: 900px) {
+            .panel {
+                padding: 20px;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .preview-img {
+                width: 90px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>🌈 金句墙后台管理</h1>
+    <div class="panel">
+        <div class="login-area">
+            <input type="password" id="password" placeholder="输入密码即可进入" autocomplete="current-password">
+            <button id="loginBtn">进入后台</button>
+        </div>
+
+        <div id="adminContent" style="display: none;">
+            <div class="toolbar">
+                <button class="success" id="refreshBtn">🔄 刷新数据</button>
+                <button id="hideBtn">🙈 隐藏选中</button>
+                <button id="showBtn">👀 显示选中</button>
+                <button class="delete" id="deleteBtn">🧹 删除选中</button>
+            </div>
+            <div class="status-bar" id="statusBar">未加载数据</div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">
+                                <input type="checkbox" id="selectAll">
+                            </th>
+                            <th style="width: 120px;">预览</th>
+                            <th>ID</th>
+                            <th>创建时间</th>
+                            <th>举报</th>
+                            <th>状态</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr><td colspan="6" class="empty-state">请点击“刷新数据”加载金句</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">Made with 💾 for admins only.</div>
+
+    <script>
+        const state = {
+            password: sessionStorage.getItem('quote-admin-password') || '',
+            quotes: [],
+            selected: new Set(),
+        };
+
+        const API_BASE = window.location.origin;
+
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('loginBtn');
+        const adminContent = document.getElementById('adminContent');
+        const tableBody = document.getElementById('tableBody');
+        const statusBar = document.getElementById('statusBar');
+        const selectAllCheckbox = document.getElementById('selectAll');
+
+        if (state.password) {
+            passwordInput.value = state.password;
+            unlockAdmin();
+            loadQuotes();
+        }
+
+        loginBtn.addEventListener('click', () => {
+            const pwd = passwordInput.value.trim();
+            if (!pwd) {
+                showToast('请先输入密码', 'error');
+                return;
+            }
+            state.password = pwd;
+            sessionStorage.setItem('quote-admin-password', pwd);
+            unlockAdmin();
+            loadQuotes();
+        });
+
+        document.getElementById('refreshBtn').addEventListener('click', loadQuotes);
+        document.getElementById('hideBtn').addEventListener('click', () => bulkUpdate('hide'));
+        document.getElementById('showBtn').addEventListener('click', () => bulkUpdate('unhide'));
+        document.getElementById('deleteBtn').addEventListener('click', bulkDelete);
+        selectAllCheckbox.addEventListener('change', toggleSelectAll);
+
+        function unlockAdmin() {
+            adminContent.style.display = 'block';
+        }
+
+        function renderQuotes() {
+            state.selected.clear();
+            selectAllCheckbox.checked = false;
+
+            if (!state.quotes.length) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="empty-state">暂无数据，试试刷新？</td></tr>';
+                statusBar.textContent = '共 0 条记录';
+                return;
+            }
+
+            const rows = state.quotes.map((quote) => {
+                const isHidden = quote.hidden;
+                return `
+                    <tr data-id="${quote.id}" class="${isHidden ? 'hidden' : ''}">
+                        <td>
+                            <input type="checkbox" class="row-checkbox" data-id="${quote.id}">
+                        </td>
+                        <td>
+                            <img src="${quote.image}" alt="quote" class="preview-img">
+                        </td>
+                        <td>#${quote.id}</td>
+                        <td>${formatDateTime(quote.timestamp)}</td>
+                        <td>
+                            <span class="tag reports">🚨 ${quote.reports}</span>
+                        </td>
+                        <td>
+                            ${isHidden ? '<span class="tag hidden">已隐藏</span>' : '<span class="tag" style="background: rgba(52, 211, 153, 0.15); color: var(--success);">展示中</span>'}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            tableBody.innerHTML = rows;
+            statusBar.textContent = `共 ${state.quotes.length} 条记录`;
+
+            tableBody.querySelectorAll('.row-checkbox').forEach((checkbox) => {
+                checkbox.addEventListener('change', (event) => {
+                    const id = Number(event.target.dataset.id);
+                    if (event.target.checked) {
+                        state.selected.add(id);
+                    } else {
+                        state.selected.delete(id);
+                        selectAllCheckbox.checked = false;
+                    }
+                });
+            });
+        }
+
+        function toggleSelectAll(event) {
+            const checked = event.target.checked;
+            const checkboxes = tableBody.querySelectorAll('.row-checkbox');
+            checkboxes.forEach((checkbox) => {
+                checkbox.checked = checked;
+                const id = Number(checkbox.dataset.id);
+                if (checked) {
+                    state.selected.add(id);
+                } else {
+                    state.selected.delete(id);
+                }
+            });
+        }
+
+        async function loadQuotes() {
+            statusBar.textContent = '加载中...';
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/list`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ password: state.password }),
+                });
+
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    const message = data.error || data.details || `HTTP ${response.status}`;
+                    showToast(`加载失败: ${message}`, 'error');
+                    statusBar.textContent = message;
+                    return;
+                }
+
+                state.quotes = data.quotes;
+                renderQuotes();
+                showToast('数据加载完成');
+            } catch (error) {
+                console.error('Admin load error:', error);
+                showToast(`加载失败: ${error.message}`, 'error');
+                statusBar.textContent = error.message;
+            }
+        }
+
+        async function bulkUpdate(action) {
+            const ids = Array.from(state.selected);
+            if (!ids.length) {
+                showToast('请先选择至少一条记录', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/update`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ password: state.password, action, ids }),
+                });
+
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    const message = data.error || data.details || `HTTP ${response.status}`;
+                    showToast(`操作失败: ${message}`, 'error');
+                    return;
+                }
+
+                showToast('状态更新成功');
+                await loadQuotes();
+            } catch (error) {
+                console.error('Admin update error:', error);
+                showToast(`操作失败: ${error.message}`, 'error');
+            }
+        }
+
+        async function bulkDelete() {
+            const ids = Array.from(state.selected);
+            if (!ids.length) {
+                showToast('请先选择至少一条记录', 'error');
+                return;
+            }
+
+            if (!confirm(`确定删除 ${ids.length} 条记录? 此操作不可恢复!`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/delete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ password: state.password, ids }),
+                });
+
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    const message = data.error || data.details || `HTTP ${response.status}`;
+                    showToast(`删除失败: ${message}`, 'error');
+                    return;
+                }
+
+                showToast('删除成功');
+                await loadQuotes();
+            } catch (error) {
+                console.error('Admin delete error:', error);
+                showToast(`删除失败: ${error.message}`, 'error');
+            }
+        }
+
+        function formatDateTime(value) {
+            if (!value) return '-';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return '-';
+            return date.toLocaleString('zh-CN');
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(20px)';
+                setTimeout(() => toast.remove(), 200);
+            }, 2600);
+        }
+    </script>
+</body>
+</html>
