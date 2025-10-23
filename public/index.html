@@ -8,17 +8,23 @@
     <style>
         /* ======================== 搞怪活泼风格全局变量 ======================== */
         :root {
-            --color-primary: #FF6B9D;
-            --color-secondary: #FEC260;
-            --color-accent: #00D9FF;
-            --color-purple: #C973FF;
-            --color-green: #00F5A0;
-            --color-background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --color-primary: #FF6B9D; /* 粉色 */
+            --color-secondary: #FEC260; /* 橙色 */
+            --color-accent: #00D9FF; /* 青色 */
+            --color-purple: #C973FF; /* 紫色 */
+            --color-green: #00F5A0; /* 绿色 */
+            --color-orange: #FF8C42; /* 新增橙色 */
+            --color-pink: #FF1493; /* 新增粉红 */
+            --color-yellow: #FFD700; /* 新增金黄 */
+            --color-background: linear-gradient(135deg, #FF8C42 0%, #FF6B9D 25%, #FEC260 50%, #00D9FF 75%, #00F5A0 100%);
             --color-card-bg: #FFFFFF;
             --color-text: #2D3436;
             --color-border: rgba(255, 107, 157, 0.3);
             --transition-base: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             --shadow-colorful: 0 8px 32px rgba(255, 107, 157, 0.3);
+            --animation-bounce: bounce 2s infinite;
+            --animation-float: float 20s infinite ease-in-out;
+            --animation-rainbow: rainbowFlow 3s linear infinite;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -47,35 +53,47 @@
             transition: background-color 0.3s ease;
             position: relative;
             overflow-x: hidden;
+            animation: backgroundShift 10s ease-in-out infinite;
         }
 
-        /* 彩色背景气泡动画 */
+        /* 彩色背景气泡动画 - 更活泼 */
         body::before,
-        body::after {
+        body::after,
+        body::nth-child(1)::before {
             content: '';
             position: fixed;
             border-radius: 50%;
-            opacity: 0.1;
+            opacity: 0.15;
             z-index: -1;
-            animation: float 20s infinite ease-in-out;
+            animation: var(--animation-float);
         }
 
         body::before {
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, var(--color-primary), var(--color-purple));
-            top: -200px;
-            left: -200px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--color-primary), var(--color-orange));
+            top: -250px;
+            left: -250px;
             animation-delay: 0s;
         }
 
         body::after {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--color-accent), var(--color-green));
+            bottom: -200px;
+            right: -200px;
+            animation-delay: -10s;
+        }
+
+        body::nth-child(1)::before {
             width: 300px;
             height: 300px;
-            background: radial-gradient(circle, var(--color-accent), var(--color-green));
-            bottom: -150px;
-            right: -150px;
-            animation-delay: -10s;
+            background: radial-gradient(circle, var(--color-pink), var(--color-yellow));
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -5s;
         }
 
         /* ======================== 头部样式 ======================== */
@@ -119,7 +137,7 @@
             margin: 20px auto;
             display: block;
             box-shadow: 0 8px 30px rgba(255, 107, 157, 0.3);
-            animation: imageReveal 0.8s ease-out 0.4s backwards;
+            animation: imageReveal 0.8s ease-out 0.4s backwards, flashBang 3s ease-in-out infinite 2s, colorShift 4s linear infinite;
             border: 4px solid transparent;
             background: linear-gradient(white, white) padding-box,
                        linear-gradient(90deg, var(--color-primary), var(--color-accent)) border-box;
@@ -159,7 +177,7 @@
             cursor: pointer;
             transition: all var(--transition-base);
             box-shadow: var(--shadow-colorful);
-            animation: fadeIn 0.8s ease-out 0.4s backwards, cardFloat 3s ease-in-out infinite;
+            animation: fadeIn 0.8s ease-out 0.4s backwards, crazyBounce 5s ease-in-out infinite, wiggle 4s ease-in-out infinite, colorShift 6s linear infinite;
             position: relative;
             overflow: hidden;
         }
@@ -229,7 +247,7 @@
         }
 
         .upload-btn {
-            background: linear-gradient(135deg, var(--color-primary), var(--color-purple));
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
             color: white;
             border: none;
             padding: 15px 50px;
@@ -241,6 +259,7 @@
             box-shadow: 0 6px 20px rgba(255, 107, 157, 0.4);
             position: relative;
             overflow: hidden;
+            animation: pulse 2s ease-in-out infinite, spinCrazy 8s linear infinite, jumpScare 10s ease-in-out infinite;
         }
 
         .upload-btn::before {
@@ -313,7 +332,7 @@
             transition: all var(--transition-base);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
             opacity: 0;
-            animation: fadeInScale 0.5s ease-out forwards;
+            animation: fadeInScale 0.5s ease-out forwards, crazyBounce 6s ease-in-out infinite, colorShift 7s linear infinite;
             position: relative;
         }
 
@@ -402,7 +421,7 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             background-size: 200% auto;
-            animation: rainbowFlow 3s linear infinite;
+            animation: var(--animation-rainbow), crazyBounce 4s ease-in-out infinite, flashBang 8s ease-in-out infinite;
             text-decoration: none;
             cursor: pointer;
             outline: none;
@@ -529,19 +548,104 @@
             75% { transform: rotate(2deg); }
         }
 
+        @keyframes backgroundShift {
+            0%, 100% { background-position: 0% 50%; }
+            25% { background-position: 25% 50%; }
+            50% { background-position: 100% 50%; }
+            75% { background-position: 75% 50%; }
+        }
+
         @keyframes float {
             0%, 100% {
-                transform: translate(0, 0) rotate(0deg);
+                transform: translate(0, 0) rotate(0deg) scale(1);
+            }
+            12.5% {
+                transform: translate(30px, -30px) rotate(45deg) scale(1.1);
             }
             25% {
-                transform: translate(50px, -50px) rotate(90deg);
+                transform: translate(60px, 0) rotate(90deg) scale(0.9);
+            }
+            37.5% {
+                transform: translate(30px, 30px) rotate(135deg) scale(1.2);
             }
             50% {
-                transform: translate(100px, 0) rotate(180deg);
+                transform: translate(0, 60px) rotate(180deg) scale(0.8);
+            }
+            62.5% {
+                transform: translate(-30px, 30px) rotate(225deg) scale(1.3);
             }
             75% {
-                transform: translate(50px, 50px) rotate(270deg);
+                transform: translate(-60px, 0) rotate(270deg) scale(0.7);
             }
+            87.5% {
+                transform: translate(-30px, -30px) rotate(315deg) scale(1.4);
+            }
+        }
+
+        @keyframes crazyBounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0) scale(1) rotate(0deg);
+            }
+            10% {
+                transform: translateY(-30px) scale(1.1) rotate(10deg);
+            }
+            30% {
+                transform: translateY(-15px) scale(0.9) rotate(-10deg);
+            }
+            40% {
+                transform: translateY(-25px) scale(1.2) rotate(20deg);
+            }
+            60% {
+                transform: translateY(-10px) scale(0.8) rotate(-20deg);
+            }
+            70% {
+                transform: translateY(-20px) scale(1.3) rotate(30deg);
+            }
+            90% {
+                transform: translateY(-5px) scale(0.7) rotate(-30deg);
+            }
+        }
+
+        @keyframes flashBang {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            10% { opacity: 0; transform: scale(0.1); }
+            20% { opacity: 1; transform: scale(2); }
+            30% { opacity: 0; transform: scale(0.5); }
+            40% { opacity: 1; transform: scale(1.5); }
+            50% { opacity: 0; transform: scale(0.2); }
+            60% { opacity: 1; transform: scale(1.8); }
+            70% { opacity: 0; transform: scale(0.3); }
+            80% { opacity: 1; transform: scale(1.2); }
+            90% { opacity: 0; transform: scale(0.8); }
+        }
+
+        @keyframes spinCrazy {
+            0% { transform: rotate(0deg) scale(1); }
+            10% { transform: rotate(36deg) scale(1.1); }
+            20% { transform: rotate(72deg) scale(0.9); }
+            30% { transform: rotate(108deg) scale(1.2); }
+            40% { transform: rotate(144deg) scale(0.8); }
+            50% { transform: rotate(180deg) scale(1.3); }
+            60% { transform: rotate(216deg) scale(0.7); }
+            70% { transform: rotate(252deg) scale(1.4); }
+            80% { transform: rotate(288deg) scale(0.6); }
+            90% { transform: rotate(324deg) scale(1.5); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        @keyframes colorShift {
+            0% { filter: hue-rotate(0deg) brightness(1); }
+            16.67% { filter: hue-rotate(60deg) brightness(1.2); }
+            33.33% { filter: hue-rotate(120deg) brightness(0.8); }
+            50% { filter: hue-rotate(180deg) brightness(1.5); }
+            66.67% { filter: hue-rotate(240deg) brightness(0.6); }
+            83.33% { filter: hue-rotate(300deg) brightness(1.8); }
+            100% { filter: hue-rotate(360deg) brightness(1); }
+        }
+
+        @keyframes jumpScare {
+            0%, 90%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+            95% { transform: scale(1.5) rotate(180deg); opacity: 0.5; }
         }
 
         @keyframes cardFloat {
@@ -875,7 +979,23 @@
         }
 
         // ======================== 页面加载时获取金句 ========================
-        window.addEventListener('load', loadQuotes);
+        window.addEventListener('load', function() {
+            loadQuotes();
+            
+            // 添加疯狂动画随机性
+            const elements = document.querySelectorAll('.quote-card, .upload-card, .header-image, .footer');
+            elements.forEach(el => {
+                const randomDelay = Math.random() * 5; // 0-5秒随机延迟
+                el.style.animationDelay = `${randomDelay}s`;
+                
+                // 随机动画持续时间
+                const currentAnimation = el.style.animation;
+                if (currentAnimation) {
+                    const randomDuration = 3 + Math.random() * 4; // 3-7秒
+                    el.style.animationDuration = `${randomDuration}s`;
+                }
+            });
+        });
     </script>
 </body>
 </html>
