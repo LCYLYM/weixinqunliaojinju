@@ -693,10 +693,10 @@
                     body: JSON.stringify({ image: base64 })
                 });
 
-                const result = await response.json();
+                const result = await parseApiResponse(response);
 
-                if (result.success) {
-                    showToast('� 耶!上传成功!你太棒啦!', 'success');
+                if (response.ok && result.success) {
+                    showToast('🎊 耶!上传成功!你太棒啦!', 'success');
                     // 重置表单
                     document.getElementById('fileInput').value = '';
                     document.getElementById('previewContainer').style.display = 'none';
@@ -704,11 +704,12 @@
                     // 重新加载金句列表
                     setTimeout(loadQuotes, 1000);
                 } else {
-                    showToast('😭 上传失败啦: ' + result.error, 'error');
+                    const message = result?.error || result?.details || `HTTP ${response.status}`;
+                    showToast(`😭 上传失败啦: ${message}`, 'error');
                 }
             } catch (error) {
                 console.error('Upload error:', error);
-                showToast('💔 哎呀!上传失败了,再试一次吧!', 'error');
+                showToast(`💔 哎呀!上传失败了: ${error.message || error}`, 'error');
             } finally {
                 btn.disabled = false;
                 btnText.textContent = '🚀 冲鸭!立即上传!';
@@ -725,9 +726,9 @@
 
             try {
                 const response = await fetch(`${API_BASE}/api/quotes`);
-                const result = await response.json();
+                const result = await parseApiResponse(response);
 
-                if (result.success) {
+                if (response.ok && result.success) {
                     const quotes = result.quotes;
                     
                     if (quotes.length === 0) {
@@ -738,9 +739,14 @@
                             grid.appendChild(card);
                         });
                     }
+                } else {
+                    const message = result?.error || result?.hint || result?.details || `HTTP ${response.status}`;
+                    grid.innerHTML = `<p style="text-align: center; opacity: 0.8; font-size: 1.1em;">😵‍💫 获取金句失败: ${message}</p>`;
+                    showToast(`😵 获取金句失败: ${message}`, 'error');
                 }
             } catch (error) {
                 console.error('Load quotes error:', error);
+                grid.innerHTML = `<p style="text-align: center; opacity: 0.8; font-size: 1.1em;">😵‍💫 获取金句失败: ${error.message || error}</p>`;
                 showToast('😵 加载失败啦!刷新一下试试?', 'error');
             } finally {
                 loading.style.display = 'none';
@@ -799,6 +805,24 @@
         }
 
         // ======================== 工具函数 ========================
+        async function parseApiResponse(response) {
+            const contentType = response.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+                try {
+                    return await response.json();
+                } catch (err) {
+                    return { error: err.message || 'JSON解析失败' };
+                }
+            }
+
+            const text = await response.text();
+            try {
+                return JSON.parse(text);
+            } catch (err) {
+                return { error: text || err.message || `HTTP ${response.status}` };
+            }
+        }
+
         function fileToBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();

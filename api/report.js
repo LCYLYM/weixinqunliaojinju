@@ -21,6 +21,13 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  if (!process.env.POSTGRES_URL) {
+    return res.status(503).json({
+      error: '数据库连接未配置',
+      hint: '请在Vercel中创建Postgres数据库,并确保环境变量POSTGRES_URL已自动注入'
+    });
+  }
+
   try {
     let body;
     try {
@@ -69,7 +76,7 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     console.error('Report error:', error);
     
-    if (error.message.includes('relation "quotes" does not exist')) {
+  if (error?.message?.includes('relation "quotes" does not exist')) {
       return res.status(500).json({
         error: '数据库未初始化',
         hint: '请先访问 /api/init-db (POST请求)初始化数据库'
