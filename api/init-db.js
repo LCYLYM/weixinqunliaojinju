@@ -3,34 +3,22 @@
  * 在Vercel Postgres中创建quotes表
  */
 
-const { sql } = require('@vercel/postgres');
+const { ensureQuotesTable } = require('../lib/ensureTable');
 
 module.exports = async function handler(req, res) {
-  if (req.method !== 'POST') {
+  if (!['GET', 'POST'].includes(req.method)) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  if (!process.env.POSTGRES_URL) {
+    return res.status(503).json({
+      error: '数据库连接未配置',
+      hint: '请先在Vercel中配置POSTGRES_URL(使用Neon或其他Postgres服务)',
+    });
+  }
+
   try {
-    // 创建quotes表
-    await sql`
-      CREATE TABLE IF NOT EXISTS quotes (
-        id BIGSERIAL PRIMARY KEY,
-        image TEXT NOT NULL,
-        timestamp TIMESTAMPTZ DEFAULT NOW(),
-        reports INTEGER DEFAULT 0,
-        hidden BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMPTZ DEFAULT NOW()
-      )
-    `;
-
-    // 创建索引
-    await sql`
-      CREATE INDEX IF NOT EXISTS idx_quotes_hidden ON quotes(hidden);
-    `;
-
-    await sql`
-      CREATE INDEX IF NOT EXISTS idx_quotes_timestamp ON quotes(timestamp DESC);
-    `;
+    await ensureQuotesTable();
 
     return res.status(200).json({
       success: true,

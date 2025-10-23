@@ -4,6 +4,7 @@
  */
 
 const { sql } = require('@vercel/postgres');
+const { ensureQuotesTable } = require('../lib/ensureTable');
 
 const REPORT_THRESHOLD = 3; // 举报阈值
 
@@ -51,14 +52,28 @@ module.exports = async function handler(req, res) {
     }
 
     // 增加举报数,如果达到阈值则隐藏
-    const result = await sql`
-      UPDATE quotes
-      SET 
-        reports = reports + 1,
-        hidden = CASE WHEN reports + 1 >= ${REPORT_THRESHOLD} THEN true ELSE hidden END
-      WHERE id = ${quoteId}
-      RETURNING id, reports, hidden
-    `;
+    const updateQuote = async () => {
+      return await sql`
+        UPDATE quotes
+        SET 
+          reports = reports + 1,
+          hidden = CASE WHEN reports + 1 >= ${REPORT_THRESHOLD} THEN true ELSE hidden END
+        WHERE id = ${quoteId}
+        RETURNING id, reports, hidden
+      `;
+    };
+
+    let result;
+    try {
+      result = await updateQuote();
+    } catch (dbError) {
+      if (dbError?.message?.includes('relation "quotes" does not exist')) {
+        await ensureQuotesTable();
+        result = await updateQuote();
+      } else {
+        throw dbError;
+      }
+    }
 
     if (result.rowCount === 0) {
       return res.status(404).json({ error: '金句不存在' });
@@ -76,13 +91,6 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     console.error('Report error:', error);
     
-  if (error?.message?.includes('relation "quotes" does not exist')) {
-      return res.status(500).json({
-        error: '数据库未初始化',
-        hint: '请先访问 /api/init-db (POST请求)初始化数据库'
-      });
-    }
-
     return res.status(500).json({
       error: '举报失败',
       details: error.message

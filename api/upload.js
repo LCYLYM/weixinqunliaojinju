@@ -4,6 +4,7 @@
  */
 
 const { sql } = require('@vercel/postgres');
+const { ensureQuotesTable } = require('../lib/ensureTable');
 
 module.exports = async function handler(req, res) {
   // 设置CORS允许前端访问
@@ -59,14 +60,26 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: '图片过大,请压缩后上传(限制1.5MB)' });
     }
 
-    // 插入数据库
-    const result = await sql`
-      INSERT INTO quotes (image)
-      VALUES (${image})
-      RETURNING id, image, timestamp, reports, hidden
-    `;
+    const insertQuote = async () => {
+      const result = await sql`
+        INSERT INTO quotes (image)
+        VALUES (${image})
+        RETURNING id, image, timestamp, reports, hidden
+      `;
+      return result.rows[0];
+    };
 
-    const newQuote = result.rows[0];
+    let newQuote;
+    try {
+      newQuote = await insertQuote();
+    } catch (dbError) {
+      if (dbError?.message?.includes('relation "quotes" does not exist')) {
+        await ensureQuotesTable();
+        newQuote = await insertQuote();
+      } else {
+        throw dbError;
+      }
+    }
 
     return res.status(200).json({
       success: true,
@@ -84,13 +97,6 @@ module.exports = async function handler(req, res) {
     console.error('Upload error:', error);
     
     // 如果是表不存在错误
-  if (error?.message?.includes('relation "quotes" does not exist')) {
-      return res.status(500).json({
-        error: '数据库未初始化',
-        hint: '请先访问 /api/init-db (POST请求)初始化数据库'
-      });
-    }
-
     return res.status(500).json({
       error: '上传失败',
       details: error.message
