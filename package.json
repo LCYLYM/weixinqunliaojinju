@@ -7,10 +7,10 @@
     "deploy": "vercel --prod"
   },
   "dependencies": {
-    "@vercel/postgres": "^0.5.1"
+    "@vercel/postgres": "^0.10.0"
   },
   "devDependencies": {
-    "vercel": "^33.0.0"
+    "vercel": "^48.5.0"
   },
   "engines": {
     "node": ">=18.x"

@@ -3,11 +3,11 @@
  * 使用 Vercel Postgres 更新举报数
  */
 
-import { sql } from '@vercel/postgres';
+const { sql } = require('@vercel/postgres');
 
 const REPORT_THRESHOLD = 3; // 举报阈值
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
@@ -22,7 +22,14 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { quoteId } = req.body;
+    let body;
+    try {
+      body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body || {};
+    } catch (parseError) {
+      return res.status(400).json({ error: '请求体不是有效的JSON' });
+    }
+
+    const { quoteId } = body;
 
     if (!quoteId) {
       return res.status(400).json({ error: '缺少金句ID' });
