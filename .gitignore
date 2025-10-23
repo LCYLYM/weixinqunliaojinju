@@ -1,4 +1,18 @@
 
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# Vercel
+.vercel
+
+# Logs
+*.log
+
+# OS
+.DS_Store
 
 #Ignore vscode AI rules
 .github\instructions\codacy.instructions.md

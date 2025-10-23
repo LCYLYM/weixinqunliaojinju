@@ -1,0 +1,18 @@
+{
+  "name": "weixin-quote-wall",
+  "version": "3.0.0",
+  "description": "微信群聊金句墙 - Vercel纯版(Postgres数据库)",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "@vercel/postgres": "^0.5.1"
+  },
+  "devDependencies": {
+    "vercel": "^33.0.0"
+  },
+  "engines": {
+    "node": ">=18.x"
+  }
+}
