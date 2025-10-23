@@ -368,6 +368,7 @@
 
         /* ======================== 页脚 ======================== */
         .footer {
+            display: block;
             text-align: center;
             padding: 50px 20px;
             font-size: 1.5em;
@@ -382,6 +383,14 @@
             background-clip: text;
             background-size: 200% auto;
             animation: rainbowFlow 3s linear infinite;
+            text-decoration: none;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .footer:focus-visible {
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
         }
 
         /* ======================== 加载动画 ======================== */
@@ -623,7 +632,7 @@
 
     <!-- 金句墙 -->
     <div class="quotes-wall">
-        <h2>� 超级沙雕金句展示墙 🎪</h2>
+        <h2>🍎 超级沙雕金句展示墙 🎪</h2>
         <div id="loading" class="loading" style="display: none;">
             <div class="spinner"></div>
             正在加载搞笑内容中...🤣
@@ -632,9 +641,9 @@
     </div>
 
     <!-- 页脚 -->
-    <div class="footer">
+    <a class="footer" href="/admin.html" title="点我悄悄进后台 👀">
         ©️生🐟
-    </div>
+    </a>
 
     <script>
         const API_BASE = window.location.origin;
