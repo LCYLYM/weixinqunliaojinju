@@ -3,9 +3,9 @@
  * 使用 Vercel Postgres 存储图片(Base64)和元数据
  */
 
-import { sql } from '@vercel/postgres';
+const { sql } = require('@vercel/postgres');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // 设置CORS允许前端访问
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -21,7 +21,13 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { image } = req.body;
+    let body;
+    try {
+      body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body || {};
+    } catch (parseError) {
+      return res.status(400).json({ error: '请求体不是有效的JSON' });
+    }
+  const { image } = body;
 
     if (!image) {
       return res.status(400).json({ error: '缺少图片数据' });
