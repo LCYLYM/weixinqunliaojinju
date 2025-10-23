@@ -112,6 +112,26 @@
             font-weight: 600;
         }
 
+        .header-image {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 20px;
+            margin: 20px auto;
+            display: block;
+            box-shadow: 0 8px 30px rgba(255, 107, 157, 0.3);
+            animation: imageReveal 0.8s ease-out 0.4s backwards;
+            border: 4px solid transparent;
+            background: linear-gradient(white, white) padding-box,
+                       linear-gradient(90deg, var(--color-primary), var(--color-accent)) border-box;
+            transition: all var(--transition-base);
+        }
+
+        .header-image:hover {
+            transform: scale(1.05) rotate(2deg);
+            box-shadow: 0 15px 50px rgba(255, 107, 157, 0.4),
+                        0 0 50px rgba(0, 217, 255, 0.3);
+        }
+
         /* Lottie动画容器 */
         .lottie-container {
             position: absolute;
@@ -611,6 +631,7 @@
         </div>
         <h1>🎪 微信群聊金句墙 🎭</h1>
         <p class="subtitle">记录每一个沙雕瞬间 🤪✨ 笑到肚子疼!</p>
+        <img src="hhh.jpg" alt="hhh.jpg" class="header-image">
     </div>
 
     <!-- 上传区域 -->
