@@ -602,25 +602,32 @@
                 throw new Error('Token not configured');
             }
 
-            const response = await fetch(`${API_BASE}/actions/workflows/${CONFIG.WORKFLOW_FILE}/dispatches`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `token ${CONFIG.GITHUB_TOKEN}`,
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    ref: CONFIG.BRANCH,
-                    inputs: {
-                        action: action,
-                        imageData: imageData,
-                        quoteId: String(quoteId)
-                    }
-                })
-            });
+            try {
+                const response = await fetch(`${API_BASE}/actions/workflows/${CONFIG.WORKFLOW_FILE}/dispatches`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${CONFIG.GITHUB_TOKEN}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        ref: CONFIG.BRANCH,
+                        inputs: {
+                            action: action,
+                            imageData: imageData,
+                            quoteId: String(quoteId)
+                        }
+                    })
+                });
 
-            if (!response.ok) {
-                throw new Error('GitHub API 请求失败');
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('GitHub API Error:', response.status, errorText);
+                    throw new Error(`GitHub API 请求失败 (${response.status}): ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Trigger workflow error:', error);
+                throw error;
             }
         }
 
