@@ -25,6 +25,14 @@ module.exports = async function handler(req, res) {
     let body;
     try {
       body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body || {};
+      if (!body || Object.keys(body).length === 0) {
+        const buffers = [];
+        for await (const chunk of req) {
+          buffers.push(chunk);
+        }
+        const rawBody = Buffer.concat(buffers).toString();
+        body = rawBody ? JSON.parse(rawBody) : {};
+      }
     } catch (parseError) {
       return res.status(400).json({ error: '请求体不是有效的JSON' });
     }
