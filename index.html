@@ -603,11 +603,13 @@
             }
 
             try {
+                // Fine-grained tokens 使用 token 前缀，不是 Bearer
                 const response = await fetch(`${API_BASE}/actions/workflows/${CONFIG.WORKFLOW_FILE}/dispatches`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${CONFIG.GITHUB_TOKEN}`,
-                        'Accept': 'application/vnd.github.v3+json',
+                        'Authorization': `token ${CONFIG.GITHUB_TOKEN}`,
+                        'Accept': 'application/vnd.github+json',
+                        'X-GitHub-Api-Version': '2022-11-28',
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
@@ -622,9 +624,16 @@
 
                 if (!response.ok) {
                     const errorText = await response.text();
-                    console.error('GitHub API Error:', response.status, errorText);
+                    console.error('GitHub API Error:', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        body: errorText,
+                        url: `${API_BASE}/actions/workflows/${CONFIG.WORKFLOW_FILE}/dispatches`
+                    });
                     throw new Error(`GitHub API 请求失败 (${response.status}): ${errorText}`);
                 }
+                
+                console.log('Workflow triggered successfully');
             } catch (error) {
                 console.error('Trigger workflow error:', error);
                 throw error;
