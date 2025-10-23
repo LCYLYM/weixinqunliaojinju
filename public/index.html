@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微信群聊金句墙 🎉</title>
+    <style>
+        /* ======================== 搞怪活泼风格全局变量 ======================== */
+        :root {
+            --color-primary: #FF6B9D;
+            --color-secondary: #FEC260;
+            --color-accent: #00D9FF;
+            --color-purple: #C973FF;
+            --color-green: #00F5A0;
+            --color-background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --color-card-bg: #FFFFFF;
+            --color-text: #2D3436;
+            --color-border: rgba(255, 107, 157, 0.3);
+            --transition-base: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            --shadow-colorful: 0 8px 32px rgba(255, 107, 157, 0.3);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+                --color-card-bg: #2D3436;
+                --color-text: #F5F6FA;
+                --color-border: rgba(255, 107, 157, 0.4);
+                --shadow-colorful: 0 8px 32px rgba(255, 107, 157, 0.4);
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "霞鹜文楷 GB 屏幕阅读版", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+        }
+
+        body {
+            background: var(--color-background);
+            color: var(--color-text);
+            line-height: 1.7;
+            letter-spacing: 0.018em;
+            min-height: 100vh;
+            transition: background-color 0.3s ease;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* 彩色背景气泡动画 */
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            opacity: 0.1;
+            z-index: -1;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        body::before {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--color-primary), var(--color-purple));
+            top: -200px;
+            left: -200px;
+            animation-delay: 0s;
+        }
+
+        body::after {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, var(--color-accent), var(--color-green));
+            bottom: -150px;
+            right: -150px;
+            animation-delay: -10s;
+        }
+
+        /* ======================== 头部样式 ======================== */
+        .header {
+            text-align: center;
+            padding: 60px 20px 30px;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            font-weight: 900;
+            background: linear-gradient(90deg, 
+                var(--color-primary) 0%, 
+                var(--color-secondary) 25%, 
+                var(--color-accent) 50%,
+                var(--color-purple) 75%,
+                var(--color-green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            background-size: 200% auto;
+            animation: rainbowFlow 3s linear infinite, headingBounce 2s ease-in-out infinite;
+            margin-bottom: 15px;
+            text-shadow: 0 0 30px rgba(255, 107, 157, 0.5);
+            letter-spacing: 0.05em;
+        }
+
+        .header .subtitle {
+            color: var(--color-text);
+            opacity: 0.85;
+            font-size: 1.3em;
+            animation: fadeIn 1s ease-out 0.2s backwards, wiggle 3s ease-in-out infinite;
+            font-weight: 600;
+        }
+
+        /* Lottie动画容器 */
+        .lottie-container {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            width: 100px;
+            height: 100px;
+            opacity: 1;
+            animation: rotate360 10s linear infinite, pulse 2s ease-in-out infinite;
+        }
+
+        /* ======================== 上传区域 ======================== */
+        .upload-section {
+            max-width: 600px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .upload-card {
+            background: var(--color-card-bg);
+            border: 3px dashed var(--color-border);
+            border-radius: 25px;
+            padding: 50px 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition-base);
+            box-shadow: var(--shadow-colorful);
+            animation: fadeIn 0.8s ease-out 0.4s backwards, cardFloat 3s ease-in-out infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-card::before {
+            content: '✨';
+            position: absolute;
+            font-size: 3em;
+            opacity: 0;
+            pointer-events: none;
+            animation: sparkle 2s ease-in-out infinite;
+        }
+
+        .upload-card:hover {
+            transform: translateY(-8px) scale(1.03) rotate(1deg);
+            border-color: var(--color-primary);
+            box-shadow: 0 15px 50px rgba(255, 107, 157, 0.4),
+                        0 0 50px rgba(0, 217, 255, 0.3);
+            background: linear-gradient(135deg, 
+                rgba(255, 107, 157, 0.05) 0%, 
+                rgba(0, 217, 255, 0.05) 100%);
+        }
+
+        .upload-icon {
+            font-size: 4em;
+            margin-bottom: 25px;
+            animation: bounce 2s infinite, iconRotate 4s ease-in-out infinite;
+            display: inline-block;
+        }
+
+        .upload-card h2 {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+        }
+
+        .upload-card p {
+            opacity: 0.8;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .preview-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 30px rgba(255, 107, 157, 0.3);
+            animation: imageReveal 0.5s ease-out;
+            border: 4px solid transparent;
+            background: linear-gradient(white, white) padding-box,
+                       linear-gradient(90deg, var(--color-primary), var(--color-accent)) border-box;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-purple));
+            color: white;
+            border: none;
+            padding: 15px 50px;
+            border-radius: 30px;
+            font-size: 1.2em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(255, 107, 157, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .upload-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(255, 107, 157, 0.5),
+                        0 0 30px rgba(201, 115, 255, 0.3);
+        }
+
+        .upload-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .upload-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* ======================== 金句墙 ======================== */
+        .quotes-wall {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+
+        .quotes-wall h2 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 50px;
+            background: linear-gradient(90deg, 
+                var(--color-primary), 
+                var(--color-secondary), 
+                var(--color-accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: fadeIn 1s ease-out 0.6s backwards, headingBounce 2s ease-in-out infinite;
+            font-weight: 900;
+        }
+
+        .quotes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            animation: fadeIn 1s ease-out 0.8s backwards;
+        }
+
+        .quote-card {
+            background: var(--color-card-bg);
+            border: 2px solid transparent;
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all var(--transition-base);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            animation: fadeInScale 0.5s ease-out forwards;
+            position: relative;
+        }
+
+        .quote-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, 
+                var(--color-primary), 
+                var(--color-accent), 
+                var(--color-purple),
+                var(--color-green));
+            border-radius: 20px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .quote-card:hover::before {
+            opacity: 1;
+        }
+
+        .quote-card:hover {
+            transform: translateY(-10px) scale(1.03) rotate(-1deg);
+            box-shadow: 0 20px 60px rgba(255, 107, 157, 0.3),
+                        0 0 40px rgba(0, 217, 255, 0.2);
+        }
+
+        .quote-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: transform 0.4s ease;
+        }
+
+        .quote-card:hover .quote-image {
+            transform: scale(1.08);
+        }
+
+        .quote-actions {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .quote-time {
+            font-size: 0.9em;
+            opacity: 0.6;
+        }
+
+        .report-btn {
+            background: linear-gradient(135deg, #FF6B9D, #FEC260);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95em;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);
+        }
+
+        .report-btn:hover {
+            transform: scale(1.1) rotate(-3deg);
+            box-shadow: 0 6px 25px rgba(255, 107, 157, 0.5);
+        }
+
+        /* ======================== 页脚 ======================== */
+        .footer {
+            text-align: center;
+            padding: 50px 20px;
+            font-size: 1.5em;
+            font-weight: 700;
+            background: linear-gradient(90deg, 
+                var(--color-primary), 
+                var(--color-secondary), 
+                var(--color-accent),
+                var(--color-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            background-size: 200% auto;
+            animation: rainbowFlow 3s linear infinite;
+        }
+
+        /* ======================== 加载动画 ======================== */
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.4em;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .spinner {
+            border: 4px solid transparent;
+            border-top: 4px solid var(--color-primary);
+            border-right: 4px solid var(--color-accent);
+            border-bottom: 4px solid var(--color-purple);
+            border-left: 4px solid var(--color-green);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 25px auto;
+        }
+
+        /* ======================== 通知提示 ======================== */
+        .toast {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: var(--color-card-bg);
+            border: 3px solid;
+            padding: 20px 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            animation: slideInRight 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .toast.success {
+            border-color: var(--color-green);
+            background: linear-gradient(135deg, rgba(0, 245, 160, 0.1), rgba(255, 255, 255, 0.95));
+        }
+
+        .toast.error {
+            border-color: var(--color-primary);
+            background: linear-gradient(135deg, rgba(255, 107, 157, 0.1), rgba(255, 255, 255, 0.95));
+        }
+
+        /* ======================== 动画关键帧 ======================== */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.8) rotate(-5deg);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes rainbowFlow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        @keyframes headingBounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-5px) scale(1.02); }
+        }
+
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-2deg); }
+            75% { transform: rotate(2deg); }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            25% {
+                transform: translate(50px, -50px) rotate(90deg);
+            }
+            50% {
+                transform: translate(100px, 0) rotate(180deg);
+            }
+            75% {
+                transform: translate(50px, 50px) rotate(270deg);
+            }
+        }
+
+        @keyframes cardFloat {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        @keyframes sparkle {
+            0%, 100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        @keyframes iconRotate {
+            0%, 100% {
+                transform: rotate(0deg);
+            }
+            25% {
+                transform: rotate(-10deg);
+            }
+            75% {
+                transform: rotate(10deg);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        @keyframes rotate360 {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes imageReveal {
+            from {
+                opacity: 0;
+                transform: scale(0.8) rotate(-10deg);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        /* ======================== 响应式设计 ======================== */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .quotes-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .lottie-container {
+                width: 60px;
+                height: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 头部 -->
+    <div class="header">
+        <div class="lottie-container">
+            <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.8.1/dist/dotlottie-wc.js" type="module"></script>
+            <dotlottie-wc src="https://lottie.host/5c9953ae-6686-4eca-b66d-dc7069e10387/mCgPOozrQV.lottie" autoplay loop style="width: 100%; height: 100%;"></dotlottie-wc>
+        </div>
+        <h1>🎪 微信群聊金句墙 🎭</h1>
+        <p class="subtitle">记录每一个沙雕瞬间 🤪✨ 笑到肚子疼!</p>
+    </div>
+
+    <!-- 上传区域 -->
+    <div class="upload-section">
+        <div class="upload-card" onclick="document.getElementById('fileInput').click()">
+            <div class="upload-icon">🎉</div>
+            <h2>快来分享沙雕金句!</h2>
+            <p>📸 支持 PNG、JPG、JPEG 格式 | 拖拽上传超方便哦~</p>
+            <input type="file" id="fileInput" accept="image/*">
+        </div>
+
+        <div class="preview-container" id="previewContainer">
+            <img id="previewImage" class="preview-image" alt="预览">
+            <button class="upload-btn" id="uploadBtn">
+                <span id="uploadBtnText">🚀 冲鸭!立即上传!</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 金句墙 -->
+    <div class="quotes-wall">
+        <h2>� 超级沙雕金句展示墙 🎪</h2>
+        <div id="loading" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            正在加载搞笑内容中...🤣
+        </div>
+        <div class="quotes-grid" id="quotesGrid"></div>
+    </div>
+
+    <!-- 页脚 -->
+    <div class="footer">
+        ©️生🐟
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        let selectedFile = null;
+
+        // ======================== 文件选择处理 ========================
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // 验证文件类型
+            if (!file.type.startsWith('image/')) {
+                showToast('❌ 喂!这不是图片啦!', 'error');
+                return;
+            }
+
+            // 验证文件大小(限制10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                showToast('😱 图片太大啦!超过10MB了哦~', 'error');
+                return;
+            }
+
+            selectedFile = file;
+            
+            // 显示预览
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('previewImage').src = e.target.result;
+                document.getElementById('previewContainer').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // ======================== 上传处理 ========================
+        document.getElementById('uploadBtn').addEventListener('click', async function() {
+            if (!selectedFile) {
+                showToast('🙈 咦?图片呢?先选一张吧!', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('uploadBtn');
+            const btnText = document.getElementById('uploadBtnText');
+            btn.disabled = true;
+            btnText.textContent = '⏳ 正在飞速上传中...';
+
+            try {
+                // 将图片转为Base64
+                const base64 = await fileToBase64(selectedFile);
+
+                // 调用API上传
+                const response = await fetch(`${API_BASE}/api/upload`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ image: base64 })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('� 耶!上传成功!你太棒啦!', 'success');
+                    // 重置表单
+                    document.getElementById('fileInput').value = '';
+                    document.getElementById('previewContainer').style.display = 'none';
+                    selectedFile = null;
+                    // 重新加载金句列表
+                    setTimeout(loadQuotes, 1000);
+                } else {
+                    showToast('😭 上传失败啦: ' + result.error, 'error');
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                showToast('💔 哎呀!上传失败了,再试一次吧!', 'error');
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = '🚀 冲鸭!立即上传!';
+            }
+        });
+
+        // ======================== 加载金句列表 ========================
+        async function loadQuotes() {
+            const loading = document.getElementById('loading');
+            const grid = document.getElementById('quotesGrid');
+            
+            loading.style.display = 'block';
+            grid.innerHTML = '';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/quotes`);
+                const result = await response.json();
+
+                if (result.success) {
+                    const quotes = result.quotes;
+                    
+                    if (quotes.length === 0) {
+                        grid.innerHTML = '<p style="text-align: center; opacity: 0.8; font-size: 1.2em;">😴 暂时还没有金句哦~快来上传第一个沙雕瞬间吧! 🎉🎊</p>';
+                    } else {
+                        quotes.forEach((quote, index) => {
+                            const card = createQuoteCard(quote, index);
+                            grid.appendChild(card);
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Load quotes error:', error);
+                showToast('😵 加载失败啦!刷新一下试试?', 'error');
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        // ======================== 创建金句卡片 ========================
+        function createQuoteCard(quote, index) {
+            const card = document.createElement('div');
+            card.className = 'quote-card';
+            card.style.animationDelay = `${index * 0.1}s`;
+
+            const date = new Date(quote.timestamp);
+            const timeStr = date.toLocaleString('zh-CN');
+
+            card.innerHTML = `
+                <img src="${quote.image}" alt="金句" class="quote-image" loading="lazy">
+                <div class="quote-actions">
+                    <span class="quote-time">⏰ ${timeStr}</span>
+                    <button class="report-btn" onclick="reportQuote(${quote.id})">
+                        🚨 举报
+                    </button>
+                </div>
+            `;
+
+            return card;
+        }
+
+        // ======================== 举报功能 ========================
+        async function reportQuote(quoteId) {
+            if (!confirm('🤔 真的要举报这条金句吗?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/report`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ quoteId })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('✅ ' + result.message, 'success');
+                    if (result.hidden) {
+                        setTimeout(loadQuotes, 1000);
+                    }
+                } else {
+                    showToast('❌ 举报失败: ' + result.error, 'error');
+                }
+            } catch (error) {
+                console.error('Report error:', error);
+                showToast('💥 举报失败啦!再试一次?', 'error');
+            }
+        }
+
+        // ======================== 工具函数 ========================
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideInRight 0.3s ease-out reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // ======================== 页面加载时获取金句 ========================
+        window.addEventListener('load', loadQuotes);
+    </script>
+</body>
+</html>
