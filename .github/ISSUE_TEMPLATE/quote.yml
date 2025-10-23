@@ -1,0 +1,31 @@
+name: 📸 提交金句
+description: 分享你看到的精彩金句
+title: "[金句] "
+labels: ["金句"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 📱 欢迎分享金句！
+        
+        请上传微信聊天截图，我们会自动添加到金句墙。
+        
+  - type: textarea
+    id: quote-image
+    attributes:
+      label: 金句截图
+      description: 请粘贴或拖拽上传微信聊天截图
+      placeholder: 点击此处，然后按 Ctrl+V 粘贴图片，或直接拖拽图片到此处
+    validations:
+      required: true
+      
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: 📋 提交须知
+      description: 提交前请确认以下内容
+      options:
+        - label: 我确认此截图不包含敏感信息
+          required: true
+        - label: 我同意将此内容公开展示
+          required: true

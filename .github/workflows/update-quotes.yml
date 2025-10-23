@@ -20,6 +20,7 @@ on:
 jobs:
   update:
     runs-on: ubuntu-latest
+    environment: github-pages  # 使用 github-pages 环境，可访问环境 Secret
     permissions:
       contents: write
     

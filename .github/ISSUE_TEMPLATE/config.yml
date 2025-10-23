@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 查看金句墙
+    url: https://lcylym.github.io/weixinqunliaojinju/
+    about: 访问在线金句分享墙
+  - name: 🚫 举报不当内容
+    url: https://github.com/LCYLYM/weixinqunliaojinju/issues
+    about: 如发现不当内容，请在对应 Issue 中评论举报
